@@ -3,34 +3,58 @@ from .models import Synthese
 from geonature.utils.env import DB
 
 
-def get_synthese(id_synthese):
-    '''
-        get synthese for exchange
-    '''
+def request_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_source_pk_value=None):
+    filter_params={}
+
+    if id_synthese:
+        filter_params = {
+            'id_synthese': id_synthese
+        }
+
+    elif unique_id_sinp:
+        filter_params = {
+            'unique_id_sinp': unique_id_sinp
+        }
+
+    elif id_source and entity_source_pk_value:
+        filter_params = {
+            'id_source': id_source,
+            'entity_source_pk_value': entity_source_pk_value
+        }
 
     synthese = (
         DB.session.query(Synthese)
-        .filter_by(id_synthese=id_synthese)
-        .one()
+        .filter_by(**filter_params)
+        if filter_params else None
+    ) 
+
+def get_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_source_pk_value=None):
+    '''
+        get synthese for exchange
+
+        soit par:
+        - id_synthese
+
+        - uuid_sinp
+
+        - id_source et entity_source_pk_value
+    '''
+
+    filter_params={}
+
+    synthese = (
+        request_synthese(id_synthese, unique_id_sinp, id_synthese, entity_source_pk_value)
     )
 
-    DB.session.commit()
+    return synthese.one() if synthese else Synthese()
 
-    return synthese
 
-def create_or_update_synthese(id_synthese=None, synthese_data=None):
+def create_or_update_synthese(synthese_data=None):
     '''
         post or patch synthese for exchange
     '''
 
-    DB.session.commit()
-
-    synthese = (
-        get_synthese(id_synthese)
-        if id_synthese
-        else Synthese()
-    )
-
+    synthese = get_synthese(**synthese_data)
 
     # synthese from dict -> marshmallow
     synthese.from_dict(synthese_data, True)
@@ -43,17 +67,58 @@ def create_or_update_synthese(id_synthese=None, synthese_data=None):
     return synthese
 
 
-def delete_synthese(id_synthese):
+def delete_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_source_pk_value=None):
     '''
         delete synthese
     '''
 
-        
-    (
-        DB.session.query(Synthese)
-        .filter_by(id_synthese=id_synthese)
+    synthese = request_synthese(id_synthese, unique_id_sinp, id_synthese, entity_source_pk_value)
+    
+    if not synthese:
+        return 0
+
+    res = synthese.delete()
+    DB.session.commit()
+
+    return res 
+
+
+def get_source(id_source):
+    '''
+        get source
+    '''
+
+
+    return ( 
+        DB.session.query(TSources)
+        .filter_by(id_source=id_source)
+        .one()
+    )
+
+def create_or_update_source(id_source, source_data=None):
+    '''
+    '''
+    source = (
+        get_source(id_source)
+        if id_source
+        else TSources()
+    )
+
+    # passer en marshmallow
+    source.fromDict(source_data, True)
+
+    return source
+
+
+def delete_source(id_source):
+    '''
+    '''
+
+    res = (
+        DB.session.query(TSources)
+        .filter_by(id_source=id_source)
         .delete()
     )
     DB.session.commit()
-    
-    return 
+
+    return res 

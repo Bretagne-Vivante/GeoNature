@@ -5,10 +5,14 @@ from pypnnomenclature.repository import (
     get_nomenclature_list
 )
 
+from .models import TSources
+from geonature.core.gn_meta.models import TDatasets
+
+
 SYNTHESE_NOMENCLATURE_TYPES = {
     'id_nomenclature_geo_object_nature': 'NAT_OBJ_GEO',
     'id_nomenclature_grp_typ': 'TYP_GRP',
-    'id_nomenclature_obs_technique': 'METH_OBS', 
+    'id_nomenclature_obs_technique': 'METH_OBS',
     'id_nomenclature_bio_status': 'STATUT_BIO',
     'id_nomenclature_bio_condition': 'ETA_BIO',
     'id_nomenclature_naturalness': 'NATURALITE',
@@ -86,10 +90,17 @@ def process_nomenclatures(data, cd_to_id):
         del data[var_in]
 
         if not value_in:
-            data[var_out] = None    
+            data[var_out] = None
             continue
-        
+
         value_out = get_nomenclature(code_type, value_in, field_name_in).get(field_name_out)
+        
+        if not value_out:
+            raise Exception({
+            "msg": "Nomenclature : il n'y a pas de correspondance pour la nomenclature (code_type, {})=({},{})"
+                .format(code_type, field_name_in, var_in)
+        }
+        )
         data[var_out] = value_out
 
 
@@ -100,13 +111,44 @@ def process_from_post_data(data):
             - ...
     '''
 
+
     data_out = {}
     for key in data:
         data_out[key] = data[key]
 
+
     process_nomenclatures(data_out, True)
 
+    check_model(TSources, data, 'id_source')
+
+    check_model(TDatasets, data, 'id_dataset')
+
     return data_out
+
+
+def check_model(TModel, data, field_name):
+    '''
+        verifie si la source existe bien
+    '''
+
+    value = data.get(field_name)
+    if not value:
+        raise Exception({"msg":"{} non défini".format(field_name)})
+
+    try: 
+        (
+            DB.session.query(TModel)
+            .filter(getattr(TModel, field_name) == value)
+            .one
+        )
+
+    except Exception as e:
+        raise Exception(
+            {"msg": "{}  avec ({}={}) n'existe pas"
+            .format(TModel, field_name, value)}
+        )
+
+    return
 
 
 def process_to_get_data(data):

@@ -4,7 +4,8 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from geoalchemy2 import Geometry
 from flask import current_app
 
-
+# Redefinition car si on prend le modele depuis ../models.py, il y a un bug (modeles trop tricotés????)
+# Relation ships ?? 
 @geoserializable
 class Synthese(DB.Model):
     __tablename__ = "synthese"
@@ -68,3 +69,17 @@ class Synthese(DB.Model):
     meta_update_date = DB.Column(DB.DateTime)
     last_action = DB.Column(DB.Unicode)
 
+class TSources(DB.Model):
+    '''
+        Sources pour la synthese
+    '''
+
+    __tablename__ = "synthese"
+    __table_args__ = {"schema": "gn_synthese", "extend_existing": True}
+    id_source = DB.Column(DB.Integer, primary_key=True)
+    name_source = DB.Column(DB.Unicode)
+    desc_source = DB.Column(DB.Unicode),
+    entity_source_pk_field = DB.Column(DB.Unicode)
+    url_source = DB.Column(DB.Unicode)
+    meta_create_date = DB.Column(DB.DateTime)
+    meta_update_date = DB.Column(DB.DateTime)
