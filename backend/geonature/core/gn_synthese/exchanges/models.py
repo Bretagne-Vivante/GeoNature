@@ -10,7 +10,7 @@ from flask import current_app
 class Synthese(DB.Model):
     __tablename__ = "synthese"
     __table_args__ = {"schema": "gn_synthese", "extend_existing": True}
-    id_synthese = DB.Column(DB.Integer, primary_key=True)
+    id_synthese = DB.Column(DB.Integer, primary_key=True, autoincrement=True)
     unique_id_sinp = DB.Column(UUID(as_uuid=True))
     unique_id_sinp_grp = DB.Column(UUID(as_uuid=True))
     id_source = DB.Column(DB.Integer)

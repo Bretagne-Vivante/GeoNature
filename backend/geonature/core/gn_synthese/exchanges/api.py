@@ -24,11 +24,12 @@ from .util import (
 
 routes = Blueprint("gn_exchanges", __name__)
 
-@routes.route("/synthese/<int:id_synthese>", methods=["GET"])
-@routes.route("/synthese/<string:unique_id_sinp>", methods=["GET"])
+@routes.route("/synthese/<int:id_synthese>", methods=["GET"], defaults={'unique_id_sinp':None, 'id_source':None, 'entity_source_pk_value':None})
+@routes.route("/synthese/<string:unique_id_sinp>", methods=["GET"], defaults={'id_synthese':None, 'id_source':None, 'entity_source_pk_value':None})
+@routes.route("/synthese/<int:id_source>/<int:entity_source_pk_value>", methods=["GET"], defaults={'id_synthese':None, 'unique_id_sinp':None})
 @permissions.check_cruved_scope("R", module_code="SYNTHESE")
 @json_resp
-def get_exchanges_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_source_pk_value=None):
+def get_exchanges_synthese(id_synthese, unique_id_sinp, id_source, entity_source_pk_value):
     '''
         get synthese for exchange
     '''
@@ -42,7 +43,8 @@ def get_exchanges_synthese(id_synthese=None, unique_id_sinp=None, id_source=None
         )
 
     except Exception as e:
-        raise e
+        return None
+        # raise e
 
 
     return (
@@ -78,7 +80,7 @@ def patch_or_post_exchange_synthese():
         )
 
     except Exception as e:
-        raise e
+        return str(e), 500
 
 
 
@@ -96,7 +98,7 @@ def post_exchanges_synthese():
 @routes.route("/synthese/", methods=["PATCH", "PUT"])
 @permissions.check_cruved_scope("U", module_code="SYNTHESE")
 @json_resp
-def patch_exchanges_synthese(id_synthese):
+def patch_exchanges_synthese():
     '''
         patch put synthese for exchange
     '''
@@ -115,78 +117,6 @@ def delete_exchanges_synthese(id_synthese):
     try:
         delete_synthese(id_synthese)
     except Exception as e:
-        raise e
+        return str(e), 500
 
     return id_synthese
-
-
-def check_request(r):
-    print(r)
-    # if not r.status_code == 200:
-        # raise Exception("{} {} {} {}".format(r.request.method, r.url, r.status_code, r.headers)) 
-
-
-@routes.route("/test", methods=["GET"])
-@permissions.check_cruved_scope("C", module_code="SYNTHESE")
-@json_resp
-def test_exchanges_synthese():
-    '''
-        test pour les routes get et post
-    '''
-
-    session = requests.Session()
-
-    api_login = "{}/{}".format(
-        current_app.config['API_ENDPOINT'],
-        'auth/login'
-    )
-
-
-    api_synthese_url = "{}/{}".format(
-        current_app.config['API_ENDPOINT'],
-        'exchanges/synthese/',
-    )
-
-    # connexion
-    r = session.post(api_login, json={"login":"admin", "password":"admin", "id_application":3})
-    check_request(r)
-
-    
-    id_synthese = DB.session.query(Synthese.id_synthese).limit(1).one()[0]
-
-    print(api_synthese_url + str(id_synthese))
-
-    # get synthese
-    r = session.get(api_synthese_url + str(id_synthese))
-    check_request(r)
-
-    post_data = r.json()
-
-    # patch synthese
-    r = session.patch(api_synthese_url + str(id_synthese), json=post_data)
-    check_request(r)
-
-    id_synthese = post_data['id_synthese']
-    print(id_synthese)
-    del post_data['unique_id_sinp']
-    del post_data['id_synthese']
-
-    # post synthese
-    r = session.post(api_synthese_url, json=post_data)
-    check_request(r)
-
-    post_data['entity_source_pk_value'] = post_data['entity_source_pk_value'] + 1
-    id_synthese = r.json()['id_synthese']
-    print(id_synthese)
-
-
-    check_request(r)
-
-    r = session.delete(api_synthese_url + str(id_synthese))
-    check_request(r)
-
-    r = session.get(api_synthese_url + str(id_synthese))
-    if r.status_code == 200:
-        return 'error', 500
-
-    return 'ok', 200

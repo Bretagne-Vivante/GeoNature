@@ -47,6 +47,7 @@ def get_token(client, login="admin", password="admin"):
         "id_application": current_app.config["ID_APPLICATION_GEONATURE"],
     }
     response = client.post(url_for("auth.login"), data=json.dumps(data), headers=headers)
+    print('get token')
     try:
         token = Cookie.from_string(response.headers["Set-Cookie"])
         return token.value

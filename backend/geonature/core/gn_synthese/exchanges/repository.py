@@ -19,14 +19,15 @@ def request_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, enti
     elif id_source and entity_source_pk_value:
         filter_params = {
             'id_source': id_source,
-            'entity_source_pk_value': entity_source_pk_value
+            'entity_source_pk_value': str(entity_source_pk_value)
         }
 
-    synthese = (
+    return  (
         DB.session.query(Synthese)
         .filter_by(**filter_params)
         if filter_params else None
-    ) 
+    )
+
 
 def get_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_source_pk_value=None):
     '''
@@ -40,13 +41,12 @@ def get_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_s
         - id_source et entity_source_pk_value
     '''
 
-    filter_params={}
-
-    synthese = (
-        request_synthese(id_synthese, unique_id_sinp, id_synthese, entity_source_pk_value)
+    req_synthese = (
+        request_synthese(id_synthese, unique_id_sinp, id_source, entity_source_pk_value)
     )
+    
 
-    return synthese.one() if synthese else Synthese()
+    return req_synthese.one() if req_synthese else Synthese()
 
 
 def create_or_update_synthese(synthese_data=None):
@@ -54,13 +54,25 @@ def create_or_update_synthese(synthese_data=None):
         post or patch synthese for exchange
     '''
 
-    synthese = get_synthese(**synthese_data)
+    DB.session.commit()
+    
+    synthese_data_for_get = {
+        key : synthese_data.get(key)
+        for key in ['id_synthese', 'unique_id_sinp', 'id_source', 'entity_source_pk_value']
+    }
+
+    try: 
+        synthese = get_synthese(**synthese_data_for_get)
+    except Exception as e:
+        synthese = Synthese()
+
+    if not synthese.id_synthese:
+        DB.session.add(synthese)
+
 
     # synthese from dict -> marshmallow
     synthese.from_dict(synthese_data, True)
 
-    if not synthese.id_synthese:
-        DB.session.add(synthese)
 
     DB.session.commit()
 

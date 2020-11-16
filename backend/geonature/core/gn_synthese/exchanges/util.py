@@ -7,6 +7,7 @@ from pypnnomenclature.repository import (
 
 from .models import TSources
 from geonature.core.gn_meta.models import TDatasets
+from geonature.utils.env import DB
 
 
 SYNTHESE_NOMENCLATURE_TYPES = {
@@ -56,12 +57,13 @@ def get_nomenclatures_synthese():
 
 def get_nomenclature(code_type, value, field_name):
     nomenclatures = get_nomenclatures_synthese().get(code_type)
-    return list(
+    nomenclature = list(
         filter(
             lambda x : x.get(field_name) == value,
             nomenclatures.get('values')
         )
-    )[0]
+    )
+    return nomenclature and nomenclature[0] or {}
 
 
 def process_nomenclatures(data, cd_to_id):
@@ -96,10 +98,9 @@ def process_nomenclatures(data, cd_to_id):
         value_out = get_nomenclature(code_type, value_in, field_name_in).get(field_name_out)
         
         if not value_out:
-            raise Exception({
-            "msg": "Nomenclature : il n'y a pas de correspondance pour la nomenclature (code_type, {})=({},{})"
-                .format(code_type, field_name_in, var_in)
-        }
+            raise Exception(
+            "Nomenclature {}: il n'y a pas de correspondance pour la nomenclature (code_type, {})=({}, {})"
+                .format(var_in, field_name_in, code_type, value_in)
         )
         data[var_out] = value_out
 
@@ -133,7 +134,7 @@ def check_model(TModel, data, field_name):
 
     value = data.get(field_name)
     if not value:
-        raise Exception({"msg":"{} non défini".format(field_name)})
+        raise Exception("{} non defini".format(field_name))
 
     try: 
         (
@@ -144,8 +145,8 @@ def check_model(TModel, data, field_name):
 
     except Exception as e:
         raise Exception(
-            {"msg": "{}  avec ({}={}) n'existe pas"
-            .format(TModel, field_name, value)}
+            "{}  avec ({}={}) n'existe pas"
+            .format(TModel, field_name, value)
         )
 
     return
