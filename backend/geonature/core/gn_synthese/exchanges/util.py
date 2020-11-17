@@ -33,6 +33,28 @@ SYNTHESE_NOMENCLATURE_TYPES = {
     'id_nomenclature_determination_method': 'METH_DETERMIN',
 }
 
+class ApiSyntheseException(Exception):
+    '''
+        Exception pour l'api post
+
+        msg : message pour expliquer l'erreur
+        code : code de l'erreur
+
+            1 : cd_nomenclature mal défini
+            2 : source non définie
+            3 : jdd non défini 
+    '''
+
+    def __init__(self, code, msg):
+        self.code = code
+        self.msg = msg
+
+    def value(self):
+        return {
+            'code': self.code,
+            'msg': self.msg,
+        }
+
 def get_nomenclatures_synthese():
     '''
         données nomenclatures stockée en session
@@ -97,10 +119,14 @@ def process_nomenclatures(data, cd_to_id):
 
         value_out = get_nomenclature(code_type, value_in, field_name_in).get(field_name_out)
         
+        # ici on leve une exception si
+        #     value_in non None
+        #  et value_out None
         if not value_out:
-            raise Exception(
+            raise ApiSyntheseException(
             "Nomenclature {}: il n'y a pas de correspondance pour la nomenclature (code_type, {})=({}, {})"
-                .format(var_in, field_name_in, code_type, value_in)
+                .format(var_in, field_name_in, code_type, value_in),
+            1
         )
         data[var_out] = value_out
 
@@ -120,21 +146,26 @@ def process_from_post_data(data):
 
     process_nomenclatures(data_out, True)
 
-    check_model(TSources, data, 'id_source')
+    check_model(TSources, data, 'id_source', 2)
 
     check_model(TDatasets, data, 'id_dataset')
 
     return data_out
 
 
-def check_model(TModel, data, field_name):
+def check_model(TModel, data, field_name, exception_code):
     '''
         verifie si la source existe bien
+
+        i.e il existe un element de TModel tel que TModel.<field_name> = data[<field_name>]
+
+        si non on lève l'exception 
     '''
+
 
     value = data.get(field_name)
     if not value:
-        raise Exception("{} non defini".format(field_name))
+        raise ApiSyntheseException("{} non defini".format(field_name), exception_code)
 
     try: 
         (
