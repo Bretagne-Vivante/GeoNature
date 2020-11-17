@@ -1,4 +1,4 @@
-from .models import Synthese
+from .models import Synthese, TSources
 
 from geonature.utils.env import DB
 
@@ -49,7 +49,7 @@ def get_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entity_s
     return req_synthese.one() if req_synthese else Synthese()
 
 
-def create_or_update_synthese(synthese_data=None):
+def create_or_update_synthese(synthese_data):
     '''
         post or patch synthese for exchange
     '''
@@ -69,10 +69,8 @@ def create_or_update_synthese(synthese_data=None):
     if not synthese.id_synthese:
         DB.session.add(synthese)
 
-
     # synthese from dict -> marshmallow
     synthese.from_dict(synthese_data, True)
-
 
     DB.session.commit()
 
@@ -85,7 +83,7 @@ def delete_synthese(id_synthese=None, unique_id_sinp=None, id_source=None, entit
     '''
 
     synthese = request_synthese(id_synthese, unique_id_sinp, id_synthese, entity_source_pk_value)
-    
+
     if not synthese:
         return 0
 
@@ -100,24 +98,33 @@ def get_source(id_source):
         get source
     '''
 
-
-    return ( 
+    return (
         DB.session.query(TSources)
         .filter_by(id_source=id_source)
         .one()
     )
 
-def create_or_update_source(id_source, source_data=None):
+
+def create_or_update_source(source_data):
     '''
+        create or update source
     '''
+
+    id_source = source_data.get('id_source')
+
     source = (
         get_source(id_source)
         if id_source
         else TSources()
     )
 
+    if not id_source: 
+        DB.session.add(source)
+
     # passer en marshmallow
-    source.fromDict(source_data, True)
+    source.from_dict(source_data, True)
+
+    DB.session.commit()
 
     return source
 

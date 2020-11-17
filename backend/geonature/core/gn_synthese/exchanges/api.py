@@ -13,12 +13,16 @@ from .models import Synthese
 from .repository import (
     get_synthese,
     create_or_update_synthese,
-    delete_synthese
+    delete_synthese,
+    get_source,
+    create_or_update_source,
+    delete_source
 )
 
 from .util import (
     process_from_post_data,
-    process_to_get_data
+    process_to_get_data,
+    ApiSyntheseException
 )
 
 
@@ -44,7 +48,6 @@ def get_exchanges_synthese(id_synthese, unique_id_sinp, id_source, entity_source
 
     except Exception as e:
         return None
-        # raise e
 
 
     return (
@@ -56,7 +59,7 @@ def get_exchanges_synthese(id_synthese, unique_id_sinp, id_source, entity_source
 
 def patch_or_post_exchange_synthese():
     '''
-        post synthese for exchange
+        post or patch synthese for exchange
 
         post_data:
             nomenclature by code (code_type is supposed to be known)
@@ -71,7 +74,7 @@ def patch_or_post_exchange_synthese():
         post_data = request.json
         synthese_data = process_from_post_data(post_data)
 
-        synthese = create_or_update_synthese(synthese_data=synthese_data)
+        synthese = create_or_update_synthese(synthese_data)
 
         return (
             process_to_get_data(
@@ -79,8 +82,8 @@ def patch_or_post_exchange_synthese():
             )
         )
 
-    except Exception as e:
-        return str(e), 500
+    except ApiSyntheseException as e:
+        return e.as_dict(), 500
 
 
 
@@ -107,16 +110,78 @@ def patch_exchanges_synthese():
 
 
 @routes.route("/synthese/<int:id_synthese>", methods=["DELETE"])
-# @routes.route("/synthese/<int:id_synthese>", methods=["DELETE"])
 @permissions.check_cruved_scope("D", module_code="SYNTHESE")
 @json_resp
 def delete_exchanges_synthese(id_synthese):
     '''
-        patch put synthese for exchange
+        delete synthese for exchange
     '''
+
     try:
         delete_synthese(id_synthese)
-    except Exception as e:
-        return str(e), 500
+    except ApiSyntheseException as e:
+        return e.as_dict(), 500
 
     return id_synthese
+
+
+@routes.route("/source/<int:id_source>", methods=["GET"])
+@permissions.check_cruved_scope("R", module_code="SYNTHESE")
+@json_resp
+def api_get_source(id_source):
+    '''
+        api get source
+    '''
+    try:
+        source = get_source(id_source)
+    except:
+        return "Pas de source défine pour (id_source={})".format(id_source), 500
+
+    return source.as_dict()
+
+
+
+def patch_or_post_exchange_source():
+    '''
+        post or patchsource for exchange
+
+    '''
+
+    post_data = request.json
+
+    source = create_or_update_source(post_data)
+
+    return source.as_dict()
+
+
+@routes.route("/source/", methods=["PATCH"])
+@permissions.check_cruved_scope("U", module_code="SYNTHESE")
+@json_resp
+def api_patch_source():
+    '''
+        api patch source
+    '''
+    
+    return patch_or_post_exchange_source()
+
+
+@routes.route("/source/", methods=["POST"])
+@permissions.check_cruved_scope("C", module_code="SYNTHESE")
+@json_resp
+def api_post_source():
+    '''
+        api post source
+    '''
+
+    return patch_or_post_exchange_source()
+
+
+@routes.route("/source/<int:id_source>", methods=["DELETE"])
+@permissions.check_cruved_scope("D", module_code="SYNTHESE")
+@json_resp
+def api_delete_source(id_source):
+    '''
+        api delete source
+    '''
+
+    return delete_source(id_source)

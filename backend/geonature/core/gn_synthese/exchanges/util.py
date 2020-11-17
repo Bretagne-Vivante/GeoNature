@@ -45,11 +45,11 @@ class ApiSyntheseException(Exception):
             3 : jdd non défini 
     '''
 
-    def __init__(self, code, msg):
-        self.code = code
+    def __init__(self, msg, code):
         self.msg = msg
+        self.code = code
 
-    def value(self):
+    def as_dict(self):
         return {
             'code': self.code,
             'msg': self.msg,
@@ -138,7 +138,6 @@ def process_from_post_data(data):
             - ...
     '''
 
-
     data_out = {}
     for key in data:
         data_out[key] = data[key]
@@ -148,7 +147,7 @@ def process_from_post_data(data):
 
     check_model(TSources, data, 'id_source', 2)
 
-    check_model(TDatasets, data, 'id_dataset')
+    check_model(TDatasets, data, 'id_dataset', 3)
 
     return data_out
 

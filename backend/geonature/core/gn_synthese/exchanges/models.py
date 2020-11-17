@@ -1,5 +1,6 @@
 from geonature.utils.env import DB
 from utils_flask_sqla_geo.serializers import geoserializable
+from utils_flask_sqla.serializers import serializable
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from geoalchemy2 import Geometry
 from flask import current_app
@@ -68,13 +69,15 @@ class Synthese(DB.Model):
     meta_create_date = DB.Column(DB.DateTime)
     meta_update_date = DB.Column(DB.DateTime)
     last_action = DB.Column(DB.Unicode)
+    
 
+@serializable
 class TSources(DB.Model):
     '''
         Sources pour la synthese
     '''
 
-    __tablename__ = "synthese"
+    __tablename__ = "t_sources"
     __table_args__ = {"schema": "gn_synthese", "extend_existing": True}
     id_source = DB.Column(DB.Integer, primary_key=True)
     name_source = DB.Column(DB.Unicode)

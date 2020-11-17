@@ -8,7 +8,7 @@
     - test get pour les trois cas
       - id_synthese
       - uuid
-      - id_source et entity_pk_value
+      - id_source et entity_source_pk_value
 
     - test post d'un nouvelle donnée avec une donnée de la synthese
     - test patchs dans les 3 cas
@@ -34,8 +34,7 @@ from sqlalchemy.sql.expression import cast
 
 from .bootstrap_test import app, post_json, json_of_response, get_token
 
-
-from geonature.core.gn_commons.repositories import TMediaRepository
+from geonature.core.gn_meta.models import TAcquisitionFramework, TDatasets
 from geonature.utils.env import BACKEND_DIR, DB
 from geonature.utils.errors import GeoNatureError
 
@@ -171,8 +170,9 @@ class TestAPIExchanges:
             data=json.dumps(data_synthese),
             content_type="application/json",
         )
-        print(response.get_data())
         assert(response != 200)
+        code = json_of_response(response).get('code')
+        assert(code == 1)
 
 
         # source n'existe pas
@@ -184,8 +184,9 @@ class TestAPIExchanges:
             data=json.dumps(data_synthese),
             content_type="application/json",
         )
-        print(response.get_data())
         assert(response != 200)
+        code = json_of_response(response).get('code')
+        assert(code == 2)
 
         # jdd n'existe pas
         data_synthese = self.data_synthese()
@@ -195,8 +196,98 @@ class TestAPIExchanges:
             data=json.dumps(data_synthese),
             content_type="application/json",
         )
-        print(response.get_data())
         assert(response != 200)
+        code = json_of_response(response).get('code')
+        assert(code == 3)
+
+    def _full_cycle_test(self):
+
+        # test d'un post avec creation source et jdd et delete du tout
+        data_synthese = self.data_synthese()
+
+        for key in ['unique_id_sinp', 'id_synthese', 'id_source', 'entity_source_pk_value']:
+            del data_synthese[key] 
+
+        # POST source
+        url_source = '/exchanges/source/'
+        data_source = {
+            'name_source': 'Source test',
+            'desc_source': 'Ceci est un source pour faire un test',
+            'entity_source_pk_field': 'id_bidule',
+            'url_source': '???'
+        }
+        response = post_json(
+            self.client,
+            url_source,
+            data_source
+        )
+        assert(response.status_code == 200)
+        source = json_of_response(response)
+
+        # POST jdd
+        id_acquisition_framework = DB.session.query(TAcquisitionFramework).limit(1).all()[0].id_acquisition_framework
+        assert(id_acquisition_framework is not None)
+        url_dataset = '/meta/dataset'
+        data_dataset = {
+            'id_acquisition_framework': id_acquisition_framework,
+            'dataset_name': 'dataset de test',
+            'dataset_shortname': 'dataset de test',
+            'dataset_desc': 'dataset de test',
+            'marine_domain': False,
+            'terrestrial_domain': False,
+            'cor_dataset_actor': [],
+            'modules': [],
+        }
+        response = post_json(
+            self.client,
+            url_dataset,
+            data_dataset
+        )
+        assert(response.status_code == 200)
+        dataset = json_of_response(response)
+
+        # POST synthese
+        data_synthese['id_source'] = source['id_source']
+        data_synthese['id_dataset'] = dataset['id_dataset']
+        url_synthese = '/exchanges/synthese/'
+        response = post_json(
+            self.client,
+            url_synthese,
+            data_synthese
+        )
+        assert(response.status_code == 200)
+        self._data_synthese = json_of_response(response)
+        
+        # DELETE synthese
+        url_synthese = url_synthese + str(self._data_synthese['id_synthese'])
+        response = self.client.delete(url_synthese)
+        assert(response.status_code == 200)
+        response = self.client.get(url_synthese)
+        assert(response.status_code != 200)
+
+        # DELETE jdd
+
+        url_dataset = url_dataset + "/" +  str(dataset['id_dataset'])
+        DB.session.query(TDatasets).filter_by(id_dataset=dataset['id_dataset']).delete()
+        DB.session.commit()
+        # 
+        # pas de route delete dataset  actuellement
+        #
+        # response = self.client.delete(url_dataset)
+        # assert(response.status_code == 200)
+        try:
+            response = self.client.get(url_dataset)
+            # erreur si pas d'erreur (dataset supprimé juste avant)
+            assert(False)
+        except:
+            pass
+
+        # DELETE source
+        url_source = url_source + str(source['id_source'])
+        response = self.client.delete(url_source)
+        assert(response.status_code == 200)
+        response = self.client.get(url_source)
+        assert(response.status_code != 200)
 
 
 
@@ -210,3 +301,4 @@ class TestAPIExchanges:
         self._patch_synthese()
         self._delete_synthese()
         self._errors_synthese()
+        self._full_cycle_test()
