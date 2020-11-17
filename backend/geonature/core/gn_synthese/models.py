@@ -159,6 +159,7 @@ class VSyntheseDecodeNomenclatures(DB.Model):
     blurring = DB.Column(DB.Unicode)
     source_status = DB.Column(DB.Unicode)
     occ_behaviour = DB.Column(DB.Unicode)
+    occ_stat_biogeo = DB.Column(DB.Unicode)
 
 
 @serializable
@@ -284,6 +285,7 @@ class VSyntheseForWebApp(DB.Model):
     depth_min = DB.Column(DB.Integer)
     depth_max = DB.Column(DB.Integer)
     place_name = DB.Column(DB.Unicode)
+    precision = DB.Column(DB.Integer)
     the_geom_4326 = DB.Column(Geometry("GEOMETRY", 4326))
     date_min = DB.Column(DB.DateTime)
     date_max = DB.Column(DB.DateTime)
@@ -317,7 +319,7 @@ class VSyntheseForWebApp(DB.Model):
     id_nomenclature_observation_status = DB.Column(DB.Integer)
     id_nomenclature_blurring = DB.Column(DB.Integer)
     id_nomenclature_source_status = DB.Column(DB.Integer)
-    id_nomenclature_valid_status = DB.Column(DB.Integer)
+    id_nomenclature_determination_method = DB.Column(DB.Integer)
     id_nomenclature_behaviour = DB.Column(DB.Integer)
     reference_biblio = DB.Column(DB.Unicode)
     name_source = DB.Column(DB.Unicode)

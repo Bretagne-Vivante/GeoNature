@@ -92,27 +92,13 @@ VALUES
     (7, 4, 1, 1, 1),
     (7, 5, 1, 1, 1),
     (7, 6, 1, 1, 1),
-    -- Groupe en admin a tous les droits sur l'admin
+    -- Groupe admin a tous les droits sur l'admin
     (9, 1, 4, 1, 1),
     (9, 2, 4, 1, 1),
     (9, 3, 4, 1, 1),
     (9, 4, 4, 1, 1),
     (9, 5, 4, 1, 1),
     (9, 6, 4, 1, 1),
-    -- Groupe ADMIN peut gérer les permissions depuis le backoffice
-    (9, 1, 4, 1, 2),
-    (9, 2, 4, 1, 2),
-    (9, 3, 4, 1, 2),
-    (9, 4, 4, 1, 2),
-    (9, 5, 4, 1, 2),
-    (9, 6, 4, 1, 2),
-    -- Groupe ADMIN peut gérer les nomenclatures depuis le backoffice
-    (9, 1, 4, 1, 3),
-    (9, 2, 4, 1, 3),
-    (9, 3, 4, 1, 3),
-    (9, 4, 4, 1, 3),
-    (9, 5, 4, 1, 3),
-    (9, 6, 4, 1, 3),
     -- partenaire peut lire sur geonature
     (3, 2, 2, 0, 1),
     -- test_cruved_r2 a un R de 2 sur geonature - synthese par héritage
@@ -129,8 +115,7 @@ INSERT INTO gn_meta.t_acquisition_frameworks (id_acquisition_framework, unique_a
 SELECT pg_catalog.setval('gn_meta.t_datasets_id_dataset_seq', (SELECT max(id_acquisition_framework)+1 FROM gn_meta.t_acquisition_frameworks), true);
 
 INSERT INTO gn_meta.t_datasets (id_dataset, unique_dataset_id, id_acquisition_framework, dataset_name, dataset_shortname, dataset_desc, id_nomenclature_data_type, keywords, marine_domain, terrestrial_domain,
- id_nomenclature_dataset_objectif, 
- bbox_west, bbox_east, bbox_south, bbox_north, id_nomenclature_collecting_method, id_nomenclature_data_origin, id_nomenclature_source_status, id_nomenclature_resource_type, validable, meta_create_date, meta_update_date, id_digitizer) VALUES
+ id_nomenclature_dataset_objectif, bbox_west, bbox_east, bbox_south, bbox_north, id_nomenclature_collecting_method, id_nomenclature_data_origin, id_nomenclature_source_status, id_nomenclature_resource_type, validable, meta_create_date, meta_update_date, id_digitizer) VALUES
 (1, '4d331cae-65e4-4948-b0b2-a11bc5bb46c2', 1, 'Conctat aléatoire tous règnes confondus', 'Contact aléatoire', 'Observations aléatoires de la faune, de la flore ou de la fonge', ref_nomenclatures.get_id_nomenclature('DATA_TYP', '3'),'Aléatoire, hors protocole, faune, flore, fonge',false,true, ref_nomenclatures.get_id_nomenclature('JDD_OBJECTIFS', '7.2'), 4.85695, 6.85654, 44.5020, 45.25, ref_nomenclatures.get_id_nomenclature('METHO_RECUEIL', '11'), ref_nomenclatures.get_id_nomenclature('DS_PUBLIQUE', 'Pu') , ref_nomenclatures.get_id_nomenclature('STATUT_SOURCE', 'Te'), ref_nomenclatures.get_id_nomenclature('RESOURCE_TYP', '1'), true,  '2017-06-01 16:57:44.45879', null, null)
 ,(2, 'dadab32d-5f9e-4dba-aa1f-c06487d536e8', 1, 'ATBI de la réserve intégrale de Lauvitel dans le Parc national des Ecrins', 'ATBI Lauvitel', 'Inventaire biologique généralisé sur la réserve du Lauvitel', ref_nomenclatures.get_id_nomenclature('DATA_TYP', '3'),'Aléatoire, ATBI, biodiversité, faune, flore, fonge',false,true, ref_nomenclatures.get_id_nomenclature('JDD_OBJECTIFS', '7.2'), 4.85695, 6.85654, 44.5020, 45.25, ref_nomenclatures.get_id_nomenclature('METHO_RECUEIL', '11'),  ref_nomenclatures.get_id_nomenclature('DS_PUBLIQUE', 'Pu') , ref_nomenclatures.get_id_nomenclature('STATUT_SOURCE', 'Te'), ref_nomenclatures.get_id_nomenclature('RESOURCE_TYP', '1'), true,  '2017-06-01 16:59:03.25687', null, null)
 ,(3, 'dadab32d-5f9e-4dba-aa1f-c06487d536e9', 1, 'JDD3', 'JDD3', 'jdd3', ref_nomenclatures.get_id_nomenclature('DATA_TYP', '3'),'Aléatoire, ATBI, biodiversité, faune, flore, fonge',false,true, ref_nomenclatures.get_id_nomenclature('JDD_OBJECTIFS', '7.2'), 4.85695, 6.85654, 44.5020, 45.25, ref_nomenclatures.get_id_nomenclature('METHO_RECUEIL', '11'),  ref_nomenclatures.get_id_nomenclature('DS_PUBLIQUE', 'Pu') , ref_nomenclatures.get_id_nomenclature('STATUT_SOURCE', 'Te'), ref_nomenclatures.get_id_nomenclature('RESOURCE_TYP', '1'), true,  '2017-06-01 16:59:03.25687', null, 2)
@@ -140,9 +125,9 @@ INSERT INTO gn_meta.cor_acquisition_framework_voletsinp (id_acquisition_framewor
 (1,ref_nomenclatures.get_id_nomenclature('VOLET_SINP', '1'))
 ;
 
-INSERT INTO gn_meta.cor_acquisition_framework_objectif (id_acquisition_framework, id_nomenclature_objectif) VALUES
-(1,ref_nomenclatures.get_id_nomenclature('CA_OBJECTIFS', '8'))
-;
+-- INSERT INTO gn_meta.cor_acquisition_framework_objectif (id_acquisition_framework, id_nomenclature_objectif) VALUES
+-- (1,ref_nomenclatures.get_id_nomenclature('CA_OBJECTIFS', '3'))
+-- ;
 
 INSERT INTO gn_meta.cor_acquisition_framework_actor (id_cafa, id_acquisition_framework, id_role, id_organism, id_nomenclature_actor_role) VALUES
 (1, 1, NULL, 1, ref_nomenclatures.get_id_nomenclature('ROLE_ACTEUR', '8'))
