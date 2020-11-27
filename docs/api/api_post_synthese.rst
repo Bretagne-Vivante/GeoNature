@@ -11,8 +11,7 @@ Le format d'échange
 
 * Données nomenclature
 
-  * Tous les champs de type nomenclature (dont le nom commence par ``id_nomenclature_<nom_nomenclature>`` doivent être remplacés 
-par des champs dont le nom est de la forme ``cd_nomenclature_<nom_nomenclature>``
+  * Tous les champs de type nomenclature (dont le nom commence par ``id_nomenclature_<nom_nomenclature>`` sont remplacés par des champs dont le nom est de la forme ``cd_nomenclature_<nom_nomenclature>``
   * Ces champs contiennent le code des nomenclaure et non les id des nomenclatures.
 
 * Les jeux de données et sources sont précicés par  ``id_dataset`` et ``id_source``.
@@ -21,19 +20,21 @@ par des champs dont le nom est de la forme ``cd_nomenclature_<nom_nomenclature>`
 
 Les routes
 ----------
+
 * Synthese :
-  * ``GET`` : récupère les données d'une ligne de la synthèse au format d'échange
+
+  * ``GET`` : récupère une ligne de la synthèse au format d'échange
     * ``/exchanges/synthese/<int:id_synthese>``: à partir de la clé primaire ``id_synthese``
     * ``/exchanges/synthese/<string:unique_id_sinp>`` : à partir de l'uuid
     * ``/exchanges/synthese/<int:id_source>/<int:entity_source_pk_value>`` : à partir du couple ``(id_source, entity_source_pk_value)``
 
-  * ``POST/PATCH`` : pour mettre une nouvelle données, modifier une donnée existante
+  * ``POST/PATCH`` : pour mettre une nouvelle donnée, modifier une donnée existante
     * ``/exchanges/synthese/``: 
-      * les données doivent être au format d'échange
-      * possibilité d'identifier une ligne de la synthèse à partir de (en ordre de priorité:
-        * ``id_synthese``
-        * ``unique_id_sinp``
-        * ``(id_source, entity_source_pk_value)``
+      * les données ``post_data`` doivent être au format d'échange
+      * possibilité d'identifier une ligne de la synthèse à partir de (en ordre de priorité):
+          * ``id_synthese``
+          * ``unique_id_sinp``
+          * ``(id_source, entity_source_pk_value)``
 
   * ``DELETE`` : supprime une ligne de la synthèse
     * ``/exchanges/synthese/<int:id_synthese>``: à partir de la clé primaire ``id_synthese``
@@ -50,7 +51,7 @@ Les routes
 
     {
         'name_source': 'Source test',
-        'desc_source': 'Ceci est un source pour faire un test',
+        'desc_source': 'Ceci est une source de test',
         'entity_source_pk_field': 'id_bidule',
         'url_source': '???'
     }
